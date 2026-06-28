@@ -53,10 +53,11 @@ const strats = {
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
 
 const edgeEmbed = (str, options) => {
+  const type = = types[String(options?.type).toLowerCase()] || types.default;
   const {
     array,
     max
-  } = types[String(options?.type).toLowerCase()] || types.default;
+  } = type;
   const embed = new array(256);
   const bits = encode(str);
   const len = bits.length;
