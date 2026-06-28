@@ -53,7 +53,7 @@ const strats = {
   dim: (num, max) => num < (max + 1) ? num : (num + max) / 2
 }
 
-const edgeEmbed = (str, options) => {
+const bitEmbed = (str, options) => {
   const type = types[String(options?.type).toLowerCase()] || types.default;
   const {
     array,
@@ -68,4 +68,27 @@ const edgeEmbed = (str, options) => {
     embed[bit] = strat(embed[bit] + 1, max);
   }
   return embed;
+};
+
+const codeEmbed = (str, options) => {
+  const type = types[String(options?.type).toLowerCase()] || types.default;
+  const { array, max } = type;
+  const strat = strats[options?.strat || type.strat] || strats.clamp;
+  const embed = new array(256);
+  const arr = [...str];
+  const len = arr.length;
+  for (let i = 0; i !== len; ++i) {
+    const slot = arr.codePointAt(i) % 256;
+    embed[slot] = strat(embed[slot] + 1, max);
+  }
+  return embed;
+};
+
+const edgeEmbed = (str, options) => {
+  const a = edgeEmbed(str, options);
+  const b = codeEmbed(str, options);
+  const out = new (types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
+  out.set(a, 0);
+  out.set(b, 256);
+  return out;
 };
