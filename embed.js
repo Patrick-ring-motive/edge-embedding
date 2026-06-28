@@ -30,7 +30,7 @@ const embed = (str,options)=>{
   const bits = encode(str);
   const len = bits.length;
   for(let i = 0;i !== len;++i){
-    const bit = bits[i];
+    const bit = bits[255-i];
     embed[bit] += (bit % max);
   }
   return embed;
