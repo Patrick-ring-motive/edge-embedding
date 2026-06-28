@@ -85,7 +85,7 @@ const codeEmbed = (str, options) => {
 };
 
 const edgeEmbed = (str, options) => {
-  const a = edgeEmbed(str, options);
+  const a = bitEmbed(str, options);
   const b = codeEmbed(str, options);
   const out = new (types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
   out.set(a, 0);
