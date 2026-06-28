@@ -12,15 +12,15 @@ class NumberArray extends Array {
 const types = {
   int8: {
     array: Uint8Array,
-    max: 256
+    max: 255
   },
   int16: {
     array: Uint16Array,
-    max: 65536
+    max: 65535
   },
   int32: {
     array: Uint32Array,
-    max: 4294967296
+    max: 4294967295
   },
   int64: {
     array: BigUint64Array,
@@ -28,7 +28,7 @@ const types = {
   },
   float16: {
     array: Float16Array,
-    max: 65505
+    max: 65504
   },
   float32: {
     array: Float32Array,
@@ -44,9 +44,15 @@ const types = {
   }
 }
 
+const strats = {
+  clamp = (num,max)=>Math.min(num,max),
+  mod = (num,max)=>num % (max + 1),
+  dim = (num,max)=>num < (max + 1) ? num : (num + max)/2;
+}
+
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
 
-const embed = (str, options) => {
+const edgeEmbed = (str, options) => {
   const {
     array,
     max
@@ -60,3 +66,5 @@ const embed = (str, options) => {
   }
   return embed;
 };
+
+
