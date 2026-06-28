@@ -45,13 +45,13 @@ const types = {
   }
 }
 
-const strats = {
-  clamp : (num,max)=>Math.min(num,max),
-  mod : (num,max)=>num % (max + 1),
-  dim : (num,max)=>num < (max + 1) ? num : (num + max)/2,
-}
-
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+
+const strats = {
+  clamp: (num,max)=>Math.min(num,max),
+  mod: (num,max)=>num % (max + 1),
+  dim: (num,max)=>num < (max + 1) ? num : (num + max)/2
+}
 
 const edgeEmbed = (str, options) => {
   const type = types[String(options?.type).toLowerCase()] || types.default;
@@ -66,5 +66,3 @@ const edgeEmbed = (str, options) => {
   }
   return embed;
 };
-
-
