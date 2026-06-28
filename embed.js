@@ -72,7 +72,10 @@ const bitEmbed = (str, options) => {
 
 const codeEmbed = (str, options) => {
   const type = types[String(options?.type).toLowerCase()] || types.default;
-  const { array, max } = type;
+  const {
+    array,
+    max
+  } = type;
   const strat = strats[options?.strat || type.strat] || strats.clamp;
   const embed = new array(256);
   const arr = [...str];
@@ -87,7 +90,7 @@ const codeEmbed = (str, options) => {
 const edgeEmbed = (str, options) => {
   const a = bitEmbed(str, options);
   const b = codeEmbed(str, options);
-  const out = new (types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
+  const out = new(types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
   out.set(a, 0);
   out.set(b, 256);
   return out;
