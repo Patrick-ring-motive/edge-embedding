@@ -28,7 +28,8 @@ const types = {
   },
   float16: {
     array: Float16Array,
-    max: 65504
+    max: 65504,
+    strat: "dim"
   },
   float32: {
     array: Float32Array,
@@ -54,16 +55,14 @@ const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
 
 const edgeEmbed = (str, options) => {
   const type = = types[String(options?.type).toLowerCase()] || types.default;
-  const {
-    array,
-    max
-  } = type;
+  const { array, max } = type;
+  const strat = strats[options?.strat || type.strat] || strats.clamp;
   const embed = new array(256);
   const bits = encode(str);
   const len = bits.length;
   for (let i = 0; i !== len; ++i) {
     const bit = 255 - bits[i];
-    embed[bit] = ((embed[bit] + 1) % max);
+    embed[bit] = strat(embed[bit] + 1,max);
   }
   return embed;
 };
