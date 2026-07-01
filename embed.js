@@ -92,6 +92,6 @@ const edgeEmbed = (str, options) => {
   const b = codeEmbed(str, options);
   const zip = a.map((x,i)=>[x.b[i]]);
   const out = new(types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
-  out.set(zip, 0);
+  zip.forEach((x,i)=>{out[i]=x});
   return out;
 };
