@@ -90,8 +90,8 @@ const codeEmbed = (str, options) => {
 const edgeEmbed = (str, options) => {
   const a = bitEmbed(str, options);
   const b = codeEmbed(str, options);
+  const zip = a.map((x,i)=>[x.b[i]]);
   const out = new(types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
-  out.set(a, 0);
-  out.set(b, 256);
+  out.set(zip, 0);
   return out;
 };
