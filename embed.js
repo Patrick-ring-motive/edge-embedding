@@ -64,7 +64,7 @@ const bitEmbed = (str, options) => {
   const bits = encode(str);
   const len = bits.length;
   for (let i = 0; i !== len; ++i) {
-    const bit = 255 - bits[i];
+    const bit = bits[i];
     embed[bit] = strat(embed[bit] + 1, max);
   }
   return embed;
@@ -81,7 +81,7 @@ const codeEmbed = (str, options) => {
   const arr = [...str];
   const len = arr.length;
   for (let i = 0; i !== len; ++i) {
-    const slot = 255 - (arr[i].codePointAt() % 256);
+    const slot = (arr[i].codePointAt() % 256);
     embed[slot] = strat(embed[slot] + 1, max);
   }
   return embed;
