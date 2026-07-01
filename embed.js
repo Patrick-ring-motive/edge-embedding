@@ -107,6 +107,10 @@ const parseArray = x =>{
     }
 };
 
+const prettyPrint = x =>{
+  return JSON.stringify(x,null,2);
+};
+
 // Cloudflare Worker handler
 export default {
   async fetch(request, env, ctx) {
@@ -132,7 +136,7 @@ export default {
         text = body.text;
         type = body.type;
       } else {
-        return new Response(JSON.stringify({ error: 'Method not allowed. Use GET or POST.' }), {
+        return new Response(prettyPrint({ error: 'Method not allowed. Use GET or POST.' }), {
           status: 405,
           headers: { 'Content-Type': 'application/json' }
         });
@@ -140,7 +144,7 @@ export default {
 
       // Validate text parameter
       if (!text || (!isString(text) && !isArray(text))) {
-        return new Response(JSON.stringify({ error: 'Missing or invalid "text" parameter. Must be a string or array of strings.' }), {
+        return new Response(prettyPrint({ error: 'Missing or invalid "text" parameter. Must be a string or array of strings.' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
@@ -152,7 +156,7 @@ export default {
 
       // Validate all items are strings
       if (!textArray.every(isString)) {
-        return new Response(JSON.stringify({ error: 'All text values must be strings.' }), {
+        return new Response(prettyPrint({ error: 'All text values must be strings.' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
@@ -168,13 +172,13 @@ export default {
         data: isSingle ? embeddings[0] : embeddings
       };
 
-      return new Response(JSON.stringify(response), {
+      return new Response(prettyPrint(response), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
 
     } catch (error) {
-      return new Response(JSON.stringify({
+      return new Response(prettyPrint({
         error: 'Internal server error',
         message: error.message
       }), {
