@@ -81,7 +81,7 @@ const codeEmbed = (str, options) => {
   const arr = [...str];
   const len = arr.length;
   for (let i = 0; i !== len; ++i) {
-    const slot = arr[i].codePointAt() % 256;
+    const slot = 255 - (arr[i].codePointAt() % 256);
     embed[slot] = strat(embed[slot] + 1, max);
   }
   return embed;
