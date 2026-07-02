@@ -66,8 +66,7 @@ export default {
         if (text && text.length === 1) {
           text = text[0];
         }
-
-        type = url.searchParams.get('type');
+        
       } else if (request.method === 'POST') {
         // Extract from JSON body
         const body = await request.json();
@@ -111,7 +110,7 @@ export default {
       }
 
       // Generate embeddings
-      const embeddings = textArray.map(t => Array.from(edgeEmbed(t)));
+      const embeddings = textArray.map(edgeEmbed);
 
       // Return response matching Cloudflare Workers AI schema
       const isSingle = isString(text);
