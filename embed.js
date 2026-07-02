@@ -1,90 +1,25 @@
-class NumberArray extends Array {
-  constructor(...args) {
-    const arr = super(...args);
-    const len = arr.length;
-    for (let i = 0; i !== len; ++i) {
-      arr[i] = +arr[i] || 0;
-    }
-    return arr;
-  }
-}
-
-const types = {
-  int8: {
-    array: Uint8Array,
-    max: 255
-  },
-  int16: {
-    array: Uint16Array,
-    max: 65535
-  },
-  int32: {
-    array: Uint32Array,
-    max: 4294967295
-  },
-  int64: {
-    array: BigUint64Array,
-    max: Infinity
-  },
-  float16: {
-    array: Float16Array,
-    max: 65504,
-    strat: "dim"
-  },
-  float32: {
-    array: Float32Array,
-    max: Infinity
-  },
-  float64: {
-    array: Float64Array,
-    max: Infinity
-  },
-  default: {
-    array: NumberArray,
-    max: Infinity
-  }
-}
-
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
 
-const strats = {
-  clamp: (num, max) => Math.min(num, max),
-  mod: (num, max) => num % (max + 1),
-  dim: (num, max) => num < (max + 1) ? num : (num + max) / 2
-}
-
-const bitEmbed = (str, options) => {
-  const type = types[String(options?.type).toLowerCase()] || types.default;
-  const {
-    array,
-    max
-  } = type;
-  const strat = strats[options?.strat || type.strat] || strats.clamp;
-  const embed = new array(256);
+const bitEmbed = (str) => {
+  const embed = Array(256).fill(0);
   const bits = encode(str);
   const len = bits.length;
   for (let i = 0; i !== len; ++i) {
     const bit = bits[i];
     embed[bit] = strat(embed[bit] + 1, max);
   }
-  return embed;
+  return embed.map(x=>x/len);
 };
 
-const codeEmbed = (str, options) => {
-  const type = types[String(options?.type).toLowerCase()] || types.default;
-  const {
-    array,
-    max
-  } = type;
-  const strat = strats[options?.strat || type.strat] || strats.clamp;
-  const embed = new array(256);
+const codeEmbed = (str) => {
+  const embed = Array(256).fill(0);
   const arr = [...str];
   const len = arr.length;
   for (let i = 0; i !== len; ++i) {
     const slot = (arr[i].codePointAt(0) % 256);
     embed[slot] = strat(embed[slot] + 1, max);
   }
-  return embed;
+  return embed.map(x=>x/len);
 };
 
 const edgeEmbed = (str, options) => {
@@ -135,7 +70,6 @@ export default {
         // Extract from JSON body
         const body = await request.json();
         text = body.text;
-        type = body.type;
       } else {
         return new Response(prettyPrint({
           error: 'Method not allowed. Use GET or POST.'
@@ -161,7 +95,6 @@ export default {
 
       // Normalize to array for uniform processing
       const textArray = isString(text) ? [text] : text;
-      const embeddingType = type;
 
       // Validate all items are strings
       if (!textArray.every(isString)) {
@@ -176,9 +109,7 @@ export default {
       }
 
       // Generate embeddings
-      const embeddings = textArray.map(t => Array.from(edgeEmbed(t, {
-        type: embeddingType
-      })));
+      const embeddings = textArray.map(t => Array.from(edgeEmbed(t)));
 
       // Return response matching Cloudflare Workers AI schema
       const isSingle = isString(text);
