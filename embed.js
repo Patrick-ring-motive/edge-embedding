@@ -90,25 +90,27 @@ const codeEmbed = (str, options) => {
 const edgeEmbed = (str, options) => {
   const a = bitEmbed(str, options);
   const b = codeEmbed(str, options);
-  const zip = a.map((x,i)=>[x,b[i]]).flat();
+  const zip = a.map((x, i) => [x, b[i]]).flat();
   const out = new(types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
-  zip.forEach((x,i)=>{out[i]=x});
+  zip.forEach((x, i) => {
+    out[i] = x
+  });
   return out;
 };
 
 const isString = x => typeof x === 'string' || x instanceof String;
 const isArray = x => Array.isArray(x) || x instanceof Array;
 
-const parseArray = x =>{
-    try{
-        return JSON.parse(x).map(t => t.trim()).filter(Boolean);
-    }catch{
-        return String(x).split(',').map(t => t.trim()).filter(Boolean);
-    }
+const parseArray = x => {
+  try {
+    return JSON.parse(x).map(t => t.trim()).filter(Boolean);
+  } catch {
+    return String(x).split(',').map(t => t.trim()).filter(Boolean);
+  }
 };
 
-const prettyPrint = x =>{
-  return JSON.stringify(x,null,2);
+const prettyPrint = x => {
+  return JSON.stringify(x, null, 2);
 };
 
 // Cloudflare Worker handler
@@ -121,14 +123,13 @@ export default {
 
         const url = new URL(request.url);
         const textParam = url.searchParams.get('text');
-        
 
         text = textParam ? parseArray(textParam) : null;
-        
+
         if (text && text.length === 1) {
           text = text[0];
         }
-        
+
         type = url.searchParams.get('type');
       } else if (request.method === 'POST') {
         // Extract from JSON body
@@ -136,17 +137,25 @@ export default {
         text = body.text;
         type = body.type;
       } else {
-        return new Response(prettyPrint({ error: 'Method not allowed. Use GET or POST.' }), {
+        return new Response(prettyPrint({
+          error: 'Method not allowed. Use GET or POST.'
+        }), {
           status: 405,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
       }
 
       // Validate text parameter
       if (!text || (!isString(text) && !isArray(text))) {
-        return new Response(prettyPrint({ error: 'Missing or invalid "text" parameter. Must be a string or array of strings.' }), {
+        return new Response(prettyPrint({
+          error: 'Missing or invalid "text" parameter. Must be a string or array of strings.'
+        }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
       }
 
@@ -156,14 +165,20 @@ export default {
 
       // Validate all items are strings
       if (!textArray.every(isString)) {
-        return new Response(prettyPrint({ error: 'All text values must be strings.' }), {
+        return new Response(prettyPrint({
+          error: 'All text values must be strings.'
+        }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
       }
 
       // Generate embeddings
-      const embeddings = textArray.map(t => Array.from(edgeEmbed(t, { type: embeddingType })));
+      const embeddings = textArray.map(t => Array.from(edgeEmbed(t, {
+        type: embeddingType
+      })));
 
       // Return response matching Cloudflare Workers AI schema
       const isSingle = isString(text);
@@ -174,7 +189,9 @@ export default {
 
       return new Response(prettyPrint(response), {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
     } catch (error) {
@@ -183,7 +200,9 @@ export default {
         message: error.message
       }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
     }
   }
