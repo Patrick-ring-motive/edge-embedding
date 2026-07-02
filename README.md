@@ -1,159 +1,82 @@
 # Edge Embed - Cloudflare Worker
 
-A Cloudflare Worker that exposes the `edgeEmbed` function as an API, matching the Cloudflare Workers AI embedding model schema.
+Cloudflare Worker expose `edgeEmbed` fn as API, match Cloudflare Workers AI embedding schema.
 
 Example host: https://edge-embed.language-models.workers.dev/
 
 ## API Schema
 
-### GET Request
+### GET
 ```
-# Single text
-GET /?text=your+text+to+embed&type=float32
-
-# Multiple texts (comma-separated)
-GET /?text=hello,world,test&type=float32
+GET /?text=your+text+to+embed
+GET /?text=hello,world,test
 ```
 
-**Parameters:**
-- `text` (required) - Single string or comma-separated strings to embed
-- `type` (optional) - Embedding type (default: `float32`)
+**Params:**
+- `text` (required) — string or comma-separated strings
 
-### POST Request
+### POST
 ```json
-# Single text (string)
 POST /
 Content-Type: application/json
 
-{
-  "text": "your text to embed",
-  "type": "float32"
-}
-
-# Multiple texts (array)
-POST /
-Content-Type: application/json
-
-{
-  "text": ["hello", "world", "test"],
-  "type": "float32"
-}
+{ "text": "your text to embed" }
 ```
-
-### Response - Single text
+or array:
 ```json
-{
-  "shape": [512],
-  "data": [array of 512 values]
-}
+{ "text": ["hello", "world", "test"] }
 ```
 
-### Response - Multiple texts
+### Response — single
+```json
+{ "shape": [512], "data": [...512 floats] }
+```
+
+### Response — multi
 ```json
 {
   "shape": [3, 512],
-  "data": [
-    [512 values for "hello"],
-    [512 values for "world"],
-    [512 values for "test"]
-  ]
+  "data": [[...], [...], [...]]
 }
 ```
 
 ## Setup
 
-1. Install Wrangler CLI:
-   ```bash
-   npm install -g @cloudflare/wrangler
-   ```
+```bash
+npm install -g @cloudflare/wrangler
+npm install
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Configure `wrangler.toml`:
-   - Update the `route` with your actual domain
-   - Add your Cloudflare `zone_id` for production deployment
+Configure `wrangler.toml`: set `route`, add `zone_id` for prod.
 
 ## Development
 
-Run the worker locally:
 ```bash
 npm run dev
 ```
 
-### GET Request Examples:
-
-Single text:
+GET:
 ```bash
 curl "http://localhost:8787?text=hello%20world"
-```
-
-Multiple texts (comma-separated):
-```bash
 curl "http://localhost:8787?text=hello,world,test"
 ```
 
-With custom type:
+POST:
 ```bash
-curl "http://localhost:8787?text=hello&type=int8"
+curl -X POST http://localhost:8787 -H "Content-Type: application/json" -d '{"text": "hello world"}'
+curl -X POST http://localhost:8787 -H "Content-Type: application/json" -d '{"text": ["hello", "world", "test"]}'
 ```
 
-### POST Request Examples:
+## Deploy
 
-Single text:
-```bash
-curl -X POST http://localhost:8787 \
-  -H "Content-Type: application/json" \
-  -d '{"text": "hello world"}'
-```
-
-Multiple texts:
-```bash
-curl -X POST http://localhost:8787 \
-  -H "Content-Type: application/json" \
-  -d '{"text": ["hello", "world", "test"]}'
-```
-
-With custom type:
-```bash
-curl -X POST http://localhost:8787 \
-  -H "Content-Type: application/json" \
-  -d '{"text": ["hello", "world"], "type": "int16"}'
-```
-
-## Deployment
-
-Deploy to Cloudflare:
 ```bash
 npm run deploy
 ```
 
-## Options
-
-### Type Parameter
-Supported embedding types (default: `float32`):
-- `int8` - 8-bit integers (0-255)
-- `int16` - 16-bit integers (0-65535)
-- `int32` - 32-bit integers (0-4294967295)
-- `int64` - 64-bit integers
-- `float16` - 16-bit floats
-- `float32` - 32-bit floats
-- `float64` - 64-bit floats
-
-Example:
-```json
-{
-  "text": "your text",
-  "type": "int8"
-}
-```
-
 ## How It Works
 
-The `edgeEmbed` function combines two embedding strategies:
-1. **bitEmbed**: Creates a 256-dimensional embedding based on UTF-8 byte values
-2. **codeEmbed**: Creates a 256-dimensional embedding based on Unicode code points
+`edgeEmbed` combine two strategy, each 256-dim, interleave → 512-dim vector:
+1. **bitEmbed** — histogram UTF-8 byte values, normalize by length
+2. **codeEmbed** — histogram Unicode code points mod 256, normalize by length
 
-The final embedding is a 512-dimensional vector formed by interleaving both strategies.
+Empty string → zero vector, no div-by-zero.
