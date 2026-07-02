@@ -2,6 +2,8 @@
 
 A Cloudflare Worker that exposes the `edgeEmbed` function as an API, matching the Cloudflare Workers AI embedding model schema.
 
+Example host: https://edge-embed.language-models.workers.dev/
+
 ## API Schema
 
 ### GET Request
