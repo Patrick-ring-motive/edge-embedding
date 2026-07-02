@@ -4,9 +4,10 @@ const bitEmbed = (str) => {
   const embed = Array(256).fill(0);
   const bits = encode(str);
   const len = bits.length;
+  if(!len)return embed;
   for (let i = 0; i !== len; ++i) {
     const bit = bits[i];
-    embed[bit] = strat(embed[bit] + 1, max);
+    embed[bit] = Math.min(embed[bit] + 1, Number.MAX_VALUE);
   }
   return embed.map(x=>x/len);
 };
@@ -15,9 +16,10 @@ const codeEmbed = (str) => {
   const embed = Array(256).fill(0);
   const arr = [...str];
   const len = arr.length;
+  if(!len)return embed;
   for (let i = 0; i !== len; ++i) {
     const slot = (arr[i].codePointAt(0) % 256);
-    embed[slot] = strat(embed[slot] + 1, max);
+    embed[slot] = Math.min(embed[slot] + 1,  Number.MAX_VALUE);
   }
   return embed.map(x=>x/len);
 };
@@ -26,7 +28,7 @@ const edgeEmbed = (str, options) => {
   const a = bitEmbed(str, options);
   const b = codeEmbed(str, options);
   const zip = a.map((x, i) => [x, b[i]]).flat();
-  const out = new(types[String(options?.type).toLowerCase()]?.array || NumberArray)(512);
+  const out = Array(512);
   zip.forEach((x, i) => {
     out[i] = x
   });
