@@ -4,24 +4,24 @@ const bitEmbed = (str) => {
   const embed = Array(256).fill(0);
   const bits = encode(str);
   const len = bits.length;
-  if(!len)return embed;
+  if (!len) return embed;
   for (let i = 0; i !== len; ++i) {
     const bit = bits[i];
     embed[bit] = Math.min(embed[bit] + 1, Number.MAX_VALUE);
   }
-  return embed.map(x=>x/len);
+  return embed.map(x => x / len);
 };
 
 const codeEmbed = (str) => {
   const embed = Array(256).fill(0);
   const arr = [...str];
   const len = arr.length;
-  if(!len)return embed;
+  if (!len) return embed;
   for (let i = 0; i !== len; ++i) {
     const slot = (arr[i].codePointAt(0) % 256);
-    embed[slot] = Math.min(embed[slot] + 1,  Number.MAX_VALUE);
+    embed[slot] = Math.min(embed[slot] + 1, Number.MAX_VALUE);
   }
-  return embed.map(x=>x/len);
+  return embed.map(x => x / len);
 };
 
 const edgeEmbed = (str, options) => {
@@ -66,7 +66,7 @@ export default {
         if (text && text.length === 1) {
           text = text[0];
         }
-        
+
       } else if (request.method === 'POST') {
         // Extract from JSON body
         const body = await request.json();
