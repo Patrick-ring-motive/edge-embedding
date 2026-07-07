@@ -52,6 +52,7 @@ const prettyPrint = x => {
 
 // Cloudflare Worker handler
 export default {
+  edgeEmbed,
   async fetch(request, env, ctx) {
     try {
       let text, type;
