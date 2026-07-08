@@ -166,7 +166,7 @@ export default {
       const isSingle = isString(text);
       const response = {
         shape: isSingle ? [embeddings[0].length] : [embeddings.length, embeddings[0].length],
-        data: isSingle ? embeddings[0] : embeddings
+        data: [...isSingle ? embeddings[0] : embeddings]
       };
 
       return new Response(prettyPrint(response), {
