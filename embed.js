@@ -73,11 +73,7 @@ const edgeEmbed = (str, options) => {
   const codes = codeEmbed(str, options);
   const graphemes = graphemeEmbed(str, options);
   const zip = bits.map((x, i) => [x, chars[i],codes[i],graphemes[i]]).flat();
-  const out = Array(1024);
-  zip.forEach((x, i) => {
-    out[i] = x
-  });
-  return out;
+  return Float32Array.from(zip);
 };
 
 const isString = x => typeof x === 'string' || x instanceof String;
@@ -95,6 +91,30 @@ const prettyPrint = x => {
   return JSON.stringify(x, null, 2);
 };
 
+const stringify = x =>{
+  try{
+    if(isString(x)){
+      return String(x);
+    }
+    return String(JSON.stringify(x));
+  }catch{
+    return String(x);
+  }
+};
+
+async function getRequestValue(request, key) {
+  for (const parser of [
+    r => r.clone().json(),
+    async () => Object.fromEntries(new URL(request.url).searchParams),
+    async r => Object.fromEntries(await r.clone().formData()),
+    async r => Object.fromEntries(r.headers),
+  ]) {
+    try {
+      const obj = await parser(request);
+      if (Object.hasOwn(obj, key)) return obj[key];
+    } catch {}
+  }
+}
 // Cloudflare Worker handler
 export default {
   edgeEmbed,
@@ -107,16 +127,14 @@ export default {
         const url = new URL(request.url);
         const textParam = url.searchParams.get('text');
 
-        text = textParam ? parseArray(textParam) : null;
+        text = textParam ? parseArray(textParam) : parseArray(await getRequestValue(request,'text'));
 
         if (text && text.length === 1) {
           text = text[0];
         }
 
       } else if (request.method === 'POST') {
-        // Extract from JSON body
-        const body = await request.json();
-        text = body.text;
+        text = parseArray(await getRequestValue(request,'text'));
       } else {
         return new Response(prettyPrint({
           error: 'Method not allowed. Use GET or POST.'
@@ -128,32 +146,18 @@ export default {
         });
       }
 
-      // Validate text parameter
-      if (!text || (!isString(text) && !isArray(text))) {
-        return new Response(prettyPrint({
-          error: 'Missing or invalid "text" parameter. Must be a string or array of strings.'
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+      if (!text){
+        if(request.body){
+          text = await request.text();
+        }
+      }
+      
+      if(!isString(text) && !isArray(text)) {
+        text = stringify(text);
       }
 
       // Normalize to array for uniform processing
-      const textArray = isString(text) ? [text] : text;
-
-      // Validate all items are strings
-      if (!textArray.every(isString)) {
-        return new Response(prettyPrint({
-          error: 'All text values must be strings.'
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-      }
+      const textArray = (isString(text) ? [text] : text).map(stringify);
 
       // Generate embeddings
       const embeddings = textArray.map(edgeEmbed);
