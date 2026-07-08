@@ -71,7 +71,7 @@ const edgeEmbed = (str, options) => {
   const chars = charEmbed(str,options);
   const codes = codeEmbed(str, options);
   const graphemes = graphemeEmbed(str, options);
-  const zip = bits.map((x, i) => [x, chars[i],codes[i]],graphemes[i]).flat();
+  const zip = bits.map((x, i) => [x, chars[i],codes[i]],graphemes[i]]).flat();
   const out = Array(1024);
   zip.forEach((x, i) => {
     out[i] = x
