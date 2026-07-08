@@ -1,6 +1,7 @@
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
 const segmenter = Intl.Segmenter.prototype.segment.bind(new Intl.Segmenter("en", { granularity: "grapheme" }));
 const segment = x => [...segmenter(x)].map(x=>x.segment);
+const BigNumber = BigInt(Number.MAX_VALUE);
 const getCode = x =>{
   if(!x)return 0;
   x = String(x);
@@ -15,7 +16,7 @@ const getCode = x =>{
   if(x.length === 1){
     return x.codePointAt(0);
   }
-  return +x.split('').reverse().map(y=>y.codePointAt(0)).join('');
+  return Number(BigInt(x.split('').reverse().map(y=>y.codePointAt(0)).join('')) % BigNumber);
 };
 
 const bitEmbed = (str) => {
