@@ -1,4 +1,22 @@
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+const segmenter = Intl.Segmenter.prototype.segment.bind(new Intl.Segmenter("en", { granularity: "grapheme" }));
+const segment = x => [...segmenter(x)].map(x=>x.segment);
+const getCode = x =>{
+  if(!x)return 0;
+  x = String(x);
+  if(x.length === 1){
+    return x.codePointAt(0);
+  }
+  x = x.normalize('NFC');
+  if(x.length === 1){
+    return x.codePointAt(0);
+  }
+  x = x.normalize('NFKC');
+  if(x.length === 1){
+    return x.codePointAt(0);
+  }
+  return +x.split('').reverse().map(y=>y.codePointAt(0)).join('');
+};
 
 const bitEmbed = (str) => {
   const embed = Array(256).fill(0);
@@ -12,23 +30,49 @@ const bitEmbed = (str) => {
   return embed.map(x => x / len);
 };
 
+const charEmbed = (str) => {
+  const embed = Array(256).fill(0);
+  const arr = str.split('');
+  const len = arr.length;
+  if (!len) return embed;
+  for (let i = 0; i !== len; ++i) {
+    const slot = (getCode(arr[i]) % 256);
+    embed[slot] = Math.min(embed[slot] + 1, Number.MAX_VALUE);
+  }
+  return embed.map(x => x / len);
+};
+
 const codeEmbed = (str) => {
   const embed = Array(256).fill(0);
   const arr = [...str];
   const len = arr.length;
   if (!len) return embed;
   for (let i = 0; i !== len; ++i) {
-    const slot = (arr[i].codePointAt(0) % 256);
+    const slot = (getCode(arr[i]) % 256);
+    embed[slot] = Math.min(embed[slot] + 1, Number.MAX_VALUE);
+  }
+  return embed.map(x => x / len);
+};
+
+const graphemeEmbed = (str) => {
+  const embed = Array(256).fill(0);
+  const arr = segment(str);
+  const len = arr.length;
+  if (!len) return embed;
+  for (let i = 0; i !== len; ++i) {
+    const slot = (getCode(arr[i]) % 256);
     embed[slot] = Math.min(embed[slot] + 1, Number.MAX_VALUE);
   }
   return embed.map(x => x / len);
 };
 
 const edgeEmbed = (str, options) => {
-  const a = bitEmbed(str, options);
-  const b = codeEmbed(str, options);
-  const zip = a.map((x, i) => [x, b[i]]).flat();
-  const out = Array(512);
+  const bits = bitEmbed(str, options);
+  const chars = charEmbed(str,options);
+  const codes = codeEmbed(str, options);
+  const graphemes = graphemeEmbed(str, options);
+  const zip = bits.map((x, i) => [x, chars[i],codes[i]],graphemes[i]).flat();
+  const out = Array(1024);
   zip.forEach((x, i) => {
     out[i] = x
   });
