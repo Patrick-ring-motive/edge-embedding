@@ -1,22 +1,24 @@
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
-const segmenter = Intl.Segmenter.prototype.segment.bind(new Intl.Segmenter("en", { granularity: "grapheme" }));
-const segment = x => [...segmenter(x)].map(x=>x.segment);
+const segmenter = Intl.Segmenter.prototype.segment.bind(new Intl.Segmenter("en", {
+  granularity: "grapheme"
+}));
+const segment = x => [...segmenter(x)].map(x => x.segment);
 const BigNumber = BigInt(Number.MAX_VALUE);
-const getCode = x =>{
-  if(!x)return 0;
+const getCode = x => {
+  if (!x) return 0;
   x = String(x);
-  if(x.length === 1){
+  if (x.length === 1) {
     return x.codePointAt(0);
   }
   x = x.normalize('NFC');
-  if(x.length === 1){
+  if (x.length === 1) {
     return x.codePointAt(0);
   }
   x = x.normalize('NFKC');
-  if(x.length === 1){
+  if (x.length === 1) {
     return x.codePointAt(0);
   }
-  return Number(BigInt(x.split('').reverse().map(y=>y.codePointAt(0)).join('')) % BigNumber);
+  return Number(BigInt(x.split('').reverse().map(y => y.codePointAt(0)).join('')) % BigNumber);
 };
 
 const bitEmbed = (str) => {
@@ -69,10 +71,10 @@ const graphemeEmbed = (str) => {
 
 const edgeEmbed = (str, options) => {
   const bits = bitEmbed(str, options);
-  const chars = charEmbed(str,options);
+  const chars = charEmbed(str, options);
   const codes = codeEmbed(str, options);
   const graphemes = graphemeEmbed(str, options);
-  const zip = bits.map((x, i) => [x, chars[i],codes[i],graphemes[i]]).flat();
+  const zip = bits.map((x, i) => [x, chars[i], codes[i], graphemes[i]]).flat();
   return Float32Array.from(zip);
 };
 
@@ -91,24 +93,24 @@ const prettyPrint = x => {
   return JSON.stringify(x, null, 2);
 };
 
-const stringify = x =>{
-  try{
-    if(isString(x)){
+const stringify = x => {
+  try {
+    if (isString(x)) {
       return String(x);
     }
     return String(JSON.stringify(x));
-  }catch{
+  } catch {
     return String(x);
   }
 };
 
 async function getRequestValue(request, key) {
   for (const parser of [
-    r => r.clone().json(),
-    async () => Object.fromEntries(new URL(request.url).searchParams),
-    async r => Object.fromEntries(await r.clone().formData()),
-    async r => Object.fromEntries(r.headers),
-  ]) {
+      r => r.clone().json(),
+      async () => Object.fromEntries(new URL(request.url).searchParams),
+        async r => Object.fromEntries(await r.clone().formData()),
+          async r => Object.fromEntries(r.headers),
+    ]) {
     try {
       const obj = await parser(request);
       if (Object.hasOwn(obj, key)) return obj[key];
@@ -127,14 +129,14 @@ export default {
         const url = new URL(request.url);
         const textParam = url.searchParams.get('text');
 
-        text = textParam ? parseArray(textParam) : parseArray(await getRequestValue(request,'text'));
+        text = textParam ? parseArray(textParam) : parseArray(await getRequestValue(request, 'text'));
 
         if (text && text.length === 1) {
           text = text[0];
         }
 
       } else if (request.method === 'POST') {
-        text = parseArray(await getRequestValue(request,'text'));
+        text = parseArray(await getRequestValue(request, 'text'));
       } else {
         return new Response(prettyPrint({
           error: 'Method not allowed. Use GET or POST.'
@@ -146,13 +148,13 @@ export default {
         });
       }
 
-      if (!text){
-        if(request.body){
+      if (!text) {
+        if (request.body) {
           text = await request.text();
         }
       }
-      
-      if(!isString(text) && !isArray(text)) {
+
+      if (!isString(text) && !isArray(text)) {
         text = stringify(text);
       }
 
