@@ -25,48 +25,52 @@ const bitEmbed = (str) => {
   const embed = Array(256).fill(0);
   const bits = encode(str);
   const len = bits.length;
+  const root = len ** 0.5;
   if (!len) return embed;
   for (let i = 0; i !== len; ++i) {
     const bit = bits[i];
     embed[bit] = Math.min(embed[bit] + 1, Number.MAX_VALUE);
   }
-  return embed.map(x => x / len);
+  return embed.map(x => x / root);
 };
 
 const charEmbed = (str) => {
   const embed = Array(256).fill(0);
   const arr = str.split('');
   const len = arr.length;
+  const root = len ** 0.5
   if (!len) return embed;
   for (let i = 0; i !== len; ++i) {
     const slot = (getCode(arr[i]) % 256);
     embed[slot] = Math.min(embed[slot] + 1, Number.MAX_VALUE);
   }
-  return embed.map(x => x / len);
+  return embed.map(x => x / root);
 };
 
 const codeEmbed = (str) => {
   const embed = Array(256).fill(0);
   const arr = [...str];
   const len = arr.length;
+  const root = len ** 0.5;
   if (!len) return embed;
   for (let i = 0; i !== len; ++i) {
     const slot = (getCode(arr[i]) % 256);
     embed[slot] = Math.min(embed[slot] + 1, Number.MAX_VALUE);
   }
-  return embed.map(x => x / len);
+  return embed.map(x => x / root);
 };
 
 const graphemeEmbed = (str) => {
   const embed = Array(256).fill(0);
   const arr = segment(str);
   const len = arr.length;
+  const root = len ** 0.5;
   if (!len) return embed;
   for (let i = 0; i !== len; ++i) {
     const slot = (getCode(arr[i]) % 256);
     embed[slot] = Math.min(embed[slot] + 1, Number.MAX_VALUE);
   }
-  return embed.map(x => x / len);
+  return embed.map(x => x / root);
 };
 
 const edgeEmbed = (str, options) => {
