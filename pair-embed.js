@@ -1,0 +1,50 @@
+const alpha = String.fromCharCode(...[...Array(26).keys()].map(x=>x+97));
+
+const pairs = [...new Set([...alpha].map(x=>[...alpha].map(y=>y+x)).flat())];
+const pairSmall = [...new Set([...alpha].flatMap((x, i) => [...alpha].slice(i).map(y => x <= y ? x + y : y + x)))];
+
+const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+
+const l2 = (v) => {
+  const norm = Math.hypot(...v);
+  return norm ? v.map(x => x / norm) : v;
+};
+
+const bitEmbed = (str) => {
+  const embed = Array(256).fill(0);
+  const bits = encode(str);
+  const len = bits.length;
+  if (!len) return embed;
+  for (let i = 0; i !== len; ++i) {
+    const bit = bits[i];
+    embed[bit] = Math.min(embed[bit] + 1, Number.MAX_VALUE);
+  }
+  return l2(embed);
+};
+
+const pairIndex = new Map(pairs.map((p, i) => [p, i]));
+const pairSmallIndex = new Map(pairSmall.map((p, i) => [p, i]));
+
+const pairEmbed = (str) => {
+  const counts = Array(pairs.length).fill(0);
+  const text = str.toLowerCase();
+  for (let i = 0; i < text.length - 1; ++i) {
+    const idx = pairIndex.get(text[i] + text[i + 1]);
+    if (idx !== undefined) ++counts[idx];
+  }
+  return [...l2(counts), ...bitEmbed(str)];
+};
+
+const pairEmbedSmall = (str) => {
+  const counts = Array(pairSmall.length).fill(0);
+  const text = str.toLowerCase();
+  for (let i = 0; i < text.length - 1; ++i) {
+    const a = text[i];
+    const b = text[i + 1];
+    if (!/[a-z]/.test(a) || !/[a-z]/.test(b)) continue;
+    const key = a < b ? a + b : b + a;
+    const idx = pairSmallIndex.get(key);
+    if (idx !== undefined) ++counts[idx];
+  }
+  return [...l2(counts), ...bitEmbed(str)];
+};
