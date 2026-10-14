@@ -1,6 +1,6 @@
-const alpha = String.fromCharCode(...[...Array(26).keys()].map(x=>x+97));
+const alpha = String.fromCharCode(...[...Array(26).keys()].map(x => x + 97));
 
-const pairs = [...new Set([...alpha].map(x=>[...alpha].map(y=>y+x)).flat())];
+const pairs = [...new Set([...alpha].map(x => [...alpha].map(y => y + x)).flat())];
 const pairSmall = [...new Set([...alpha].flatMap((x, i) => [...alpha].slice(i).map(y => x <= y ? x + y : y + x)))];
 
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
