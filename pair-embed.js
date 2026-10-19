@@ -1,7 +1,10 @@
 const alpha = String.fromCharCode(...[...Array(26).keys()].map(x => x + 97));
+const latin = [...alpha].filter(x=>!/uwj/.test(x)).join``;
 
 const pairs = [...new Set([...alpha].map(x => [...alpha].map(y => y + x)).flat())];
-const pairSmall = [...new Set([...alpha].flatMap((x, i) => [...alpha].slice(i).map(y => x <= y ? x + y : y + x)))];
+const pairsSmall = [...new Set([...alpha].flatMap((x, i) => [...alpha].slice(i).map(y => x <= y ? x + y : y + x)))];
+const pairsLatin = [...new Set([...latin].map(x => [...latin].map(y => y + x)).flat())];
+const pairsLatinSmall = [...new Set([...latin].flatMap((x, i) => [...latin].slice(i).map(y => x <= y ? x + y : y + x)))];
 
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
 
@@ -23,7 +26,7 @@ const bitEmbed = (str) => {
 };
 
 const pairIndex = new Map(pairs.map((p, i) => [p, i]));
-const pairSmallIndex = new Map(pairSmall.map((p, i) => [p, i]));
+const pairSmallIndex = new Map(pairsSmall.map((p, i) => [p, i]));
 
 const pairEmbed = (str) => {
   const counts = Array(pairs.length).fill(0);
@@ -36,7 +39,7 @@ const pairEmbed = (str) => {
 };
 
 const pairEmbedSmall = (str) => {
-  const counts = Array(pairSmall.length).fill(0);
+  const counts = Array(pairsSmall.length).fill(0);
   const text = str.toLowerCase();
   for (let i = 0; i < text.length - 1; ++i) {
     const a = text[i];
