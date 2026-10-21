@@ -1,5 +1,5 @@
 const alpha = String.fromCharCode(...[...Array(26).keys()].map(x => x + 97));
-const latin = [...alpha].filter(x=>!/uwj/.test(x)).join``;
+const latin = [...alpha].filter(x => !/uwj/.test(x)).join``;
 
 const pairs = [...new Set([...alpha].map(x => [...alpha].map(y => y + x)).flat())];
 const pairsSmall = [...new Set([...alpha].flatMap((x, i) => [...alpha].slice(i).map(y => x <= y ? x + y : y + x)))];
