@@ -27,6 +27,10 @@ const bitEmbed = (str) => {
 
 const pairIndex = new Map(pairs.map((p, i) => [p, i]));
 const pairSmallIndex = new Map(pairsSmall.map((p, i) => [p, i]));
+const pairLatinIndex = new Map(pairsLatin.map((p, i) => [p, i]));
+const pairLatinSmallIndex = new Map(pairsLatinSmall.map((p, i) => [p, i]));
+
+
 
 const pairEmbed = (str) => {
   const counts = Array(pairs.length).fill(0);
@@ -47,6 +51,36 @@ const pairEmbedSmall = (str) => {
     if (!/[a-z]/.test(a) || !/[a-z]/.test(b)) continue;
     const key = a < b ? a + b : b + a;
     const idx = pairSmallIndex.get(key);
+    if (idx !== undefined) ++counts[idx];
+  }
+  return [...l2(counts), ...bitEmbed(str)];
+};
+
+const pairLatinEmbed = (str) => {
+  const counts = Array(pairs.length).fill(0);
+  const text = str.toLowerCase()
+    .replaceAll('u','v')
+    .replaceAll('w','vv')
+    .replaceAll('j','i');
+  for (let i = 0; i < text.length - 1; ++i) {
+    const idx = pairLatinIndex.get(text[i] + text[i + 1]);
+    if (idx !== undefined) ++counts[idx];
+  }
+  return [...l2(counts), ...bitEmbed(str)];
+};
+
+const pairLatinEmbedSmall = (str) => {
+  const counts = Array(pairsSmall.length).fill(0);
+  const text = str.toLowerCase()
+    .replaceAll('u','v')
+    .replaceAll('w','vv')
+    .replaceAll('j','i');
+  for (let i = 0; i < text.length - 1; ++i) {
+    const a = text[i];
+    const b = text[i + 1];
+    if (!/[a-z]/.test(a) || !/[a-z]/.test(b)) continue;
+    const key = a < b ? a + b : b + a;
+    const idx = pairLatinSmallIndex.get(key);
     if (idx !== undefined) ++counts[idx];
   }
   return [...l2(counts), ...bitEmbed(str)];
